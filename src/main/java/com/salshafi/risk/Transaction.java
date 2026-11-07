@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -13,8 +14,13 @@ import java.time.Instant;
  * One payment transaction that the service receives and checks.
  * Each object is stored as a row in the "transactions" table.
  */
+// The velocity rule counts one account's transactions inside a time window.
+// This index makes that query fast: the exact-match column (account_id)
+// comes first and the range column (occurred_at) comes second.
 @Entity
-@Table(name = "transactions")
+@Table(name = "transactions", indexes = {
+        @Index(name = "idx_transactions_account_time", columnList = "account_id, occurred_at")
+})
 public class Transaction {
 
     // The database generates the id, so we never set it ourselves.
@@ -22,7 +28,7 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "account_id", nullable = false)
     private String accountId;
 
     // BigDecimal instead of double, because floating point can
@@ -40,7 +46,7 @@ public class Transaction {
 
     // Stored as an Instant (a point in UTC time) so time zones
     // don't cause confusion when we compare transactions later.
-    @Column(nullable = false)
+    @Column(name = "occurred_at", nullable = false)
     private Instant occurredAt;
 
     // JPA needs an empty constructor to build objects from database rows.
@@ -53,7 +59,7 @@ public class Transaction {
         this.amount = amount;
         this.currency = currency;
         this.country = country;
-        this.occurredAt = occurredAt;
+            this.occurredAt = occurredAt;
     }
 
     public Long getId() { return id; }
