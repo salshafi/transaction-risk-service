@@ -1,4 +1,4 @@
-# transaction-risk-service
+# Transaction Risk Service
 
 ![CI](https://github.com/salshafi/transaction-risk-service/actions/workflows/ci.yml/badge.svg)
 
